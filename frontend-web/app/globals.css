@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-ink text-bone font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-wide;
+  }
+  ::selection {
+    @apply bg-brass text-ink;
+  }
+}
+
+@layer components {
+  /* Elemento assinatura da marca: a faixa diagonal do poste de barbeiro,
+     usada com moderação como divisor entre seções. */
+  .barber-stripe {
+    height: 6px;
+    background: repeating-linear-gradient(
+      -45deg,
+      theme('colors.oxblood.DEFAULT'),
+      theme('colors.oxblood.DEFAULT') 12px,
+      theme('colors.bone.DEFAULT') 12px,
+      theme('colors.bone.DEFAULT') 24px,
+      theme('colors.brass.DEFAULT') 24px,
+      theme('colors.brass.DEFAULT') 36px
+    );
+  }
+
+  .ticket-number {
+    @apply font-mono text-brass tracking-widest2 text-sm;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-sm bg-brass px-6 py-3
+      font-display text-sm tracking-widest2 text-ink transition
+      hover:bg-brass-light active:translate-y-px;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-sm border border-bone/30 px-6 py-3
+      font-display text-sm tracking-widest2 text-bone transition
+      hover:border-brass hover:text-brass;
+  }
+
+  .card {
+    @apply rounded-sm border border-bone/10 bg-ink-surface p-6;
+  }
+
+  .input-field {
+    @apply w-full rounded-sm border border-bone/20 bg-ink-soft px-4 py-3 text-bone
+      placeholder:text-bone-muted focus:border-brass focus:outline-none;
+  }
+}
