@@ -1,5 +1,18 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { api } from '@/lib/api';
+
+interface Service {
+  id: number;
+  name: string;
+  description?: string | null;
+  price: string | number;
+  durationMinutes: number;
+  active: boolean;
+}
 
 const problemas = [
   {
@@ -20,14 +33,17 @@ const problemas = [
   },
 ];
 
-const servicos = [
-  { nome: 'Corte Masculino', duracao: '40 min', preco: 'R$ 45' },
-  { nome: 'Barba', duracao: '30 min', preco: 'R$ 35' },
-  { nome: 'Combo Corte + Barba', duracao: '60 min', preco: 'R$ 70' },
-  { nome: 'Barboterapia', duracao: '45 min', preco: 'R$ 50' },
-];
-
 export default function LandingPage() {
+  const [servicos, setServicos] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<Service[]>('/services?active=true')
+      .then((data) => setServicos(data))
+      .catch((err) => console.error('Erro ao buscar serviços:', err))
+      .finally(() => setLoading(false));
+  }, []);
   return (
     <main>
       {/* NAV */}
@@ -160,21 +176,37 @@ export default function LandingPage() {
       <section className="px-6 py-20 md:px-16">
         <h2 className="text-3xl text-bone md:text-4xl">SERVIÇOS</h2>
         <div className="mt-10 divide-y divide-bone/10 border-y border-bone/10">
-          {servicos.map((s, i) => (
-            <div
-              key={s.nome}
-              className="flex items-center justify-between py-5"
-            >
-              <div className="flex items-center gap-4">
-                <span className="ticket-number">{String(i + 1).padStart(2, '0')}</span>
-                <span className="font-display text-lg text-bone">{s.nome}</span>
+          {loading ? (
+            <p className="py-5 text-bone-muted">Carregando serviços...</p>
+          ) : servicos.length === 0 ? (
+            <p className="py-5 text-bone-muted">Nenhum serviço cadastrado no momento.</p>
+          ) : (
+            servicos.map((s, i) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between py-5"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="ticket-number">{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <span className="font-display text-lg text-bone block">{s.name}</span>
+                    {s.description && (
+                      <span className="text-xs text-bone-muted">{s.description}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-6 text-sm text-bone-muted">
+                  <span>{s.durationMinutes} min</span>
+                  <span className="font-display text-brass">
+                    {Number(s.price).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-6 text-sm text-bone-muted">
-                <span>{s.duracao}</span>
-                <span className="font-display text-brass">{s.preco}</span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
