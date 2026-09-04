@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
+import HeroCarousel from './components/HeroCarousel';
 
 interface Service {
   id: number;
@@ -58,7 +59,7 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="grid gap-12 px-6 pb-20 pt-10 md:grid-cols-2 md:px-16 md:pt-16">
+      <section className="grid gap-8 px-6 pb-20 pt-10 lg:grid-cols-3 items-center md:px-12 md:pt-16">
         <div className="flex flex-col justify-center">
           <span className="ticket-number mb-4">Nº 001 — SISTEMA DE AGENDAMENTO</span>
           <h1 className="text-5xl leading-[1.05] text-bone md:text-6xl">
@@ -81,6 +82,11 @@ export default function LandingPage() {
               Sou da equipe
             </Link>
           </div>
+        </div>
+
+        {/* Coluna 2: Carrossel (3 Fotos + 1 Vídeo) */}
+        <div className="flex items-center justify-center">
+          <HeroCarousel />
         </div>
 
         {/* Elemento assinatura: ticket de agendamento, como um comprovante de fila */}
