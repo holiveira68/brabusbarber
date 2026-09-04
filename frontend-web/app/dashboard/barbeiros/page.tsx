@@ -152,6 +152,16 @@ export default function BarbeirosPage() {
     load();
   }
 
+  async function handleDeleteBarber(id: number) {
+    if (!confirm('Deseja excluir permanentemente este barbeiro e a conta dele?')) return;
+    try {
+      await api.delete(`/barbers/${id}`);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erro ao excluir barbeiro');
+    }
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -235,16 +245,24 @@ export default function BarbeirosPage() {
             <div className="flex items-center justify-between">
               <h2 className="font-display text-xl text-bone">{b.user.name}</h2>
               {isAdmin ? (
-                <button
-                  onClick={() => toggleActive(b)}
-                  className={`rounded-sm border px-2 py-0.5 text-xs ${
-                    b.active
-                      ? 'border-brass/40 text-brass'
-                      : 'border-bone/20 text-bone-muted'
-                  }`}
-                >
-                  {b.active ? 'Ativo' : 'Inativo'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => toggleActive(b)}
+                    className={`rounded-sm border px-2 py-0.5 text-xs ${
+                      b.active
+                        ? 'border-brass/40 text-brass'
+                        : 'border-bone/20 text-bone-muted'
+                    }`}
+                  >
+                    {b.active ? 'Ativo' : 'Inativo'}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteBarber(b.id)}
+                    className="rounded-sm border border-oxblood/40 px-2 py-0.5 text-xs text-oxblood-light hover:bg-oxblood/20"
+                  >
+                    Excluir
+                  </button>
+                </div>
               ) : (
                 <span
                   className={`rounded-sm border px-2 py-0.5 text-xs ${

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Put, Query, UseGuards } from '@nestjs/common';
 import { BarbersService } from './barbers.service';
 import { UpdateBarberDto } from './dto/update-barber.dto';
 import { SetWorkingHoursDto } from './dto/set-working-hours.dto';
@@ -40,5 +40,12 @@ export class BarbersController {
     @Body() dto: SetWorkingHoursDto,
   ) {
     return this.barbersService.setWorkingHours(id, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.barbersService.remove(id);
   }
 }

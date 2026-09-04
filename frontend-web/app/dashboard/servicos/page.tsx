@@ -79,11 +79,12 @@ export default function ServicosPage() {
   }
 
   async function handleDeactivate(id: number) {
-    if (!confirm('Desativar este serviço? Ele deixará de aparecer no app.')) return;
     setSavingId(id);
     try {
-      await api.delete(`/services/${id}`);
+      await api.patch(`/services/${id}`, { active: false });
       load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao desativar serviço');
     } finally {
       setSavingId(null);
     }
@@ -94,6 +95,22 @@ export default function ServicosPage() {
     try {
       await api.patch(`/services/${id}`, { active: true });
       load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao ativar serviço');
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm('Deseja excluir permanentemente este serviço do sistema?')) return;
+    setSavingId(id);
+    setError(null);
+    try {
+      await api.delete(`/services/${id}`);
+      load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erro ao excluir serviço');
     } finally {
       setSavingId(null);
     }
@@ -135,9 +152,9 @@ export default function ServicosPage() {
                   <button
                     onClick={() => handleDeactivate(s.id)}
                     disabled={savingId === s.id}
-                    className="text-oxblood-light hover:underline disabled:opacity-50"
+                    className="text-bone-muted hover:underline disabled:opacity-50"
                   >
-                    {savingId === s.id ? 'Salvando...' : 'Desativar'}
+                    Desativar
                   </button>
                 ) : (
                   <button
@@ -145,9 +162,16 @@ export default function ServicosPage() {
                     disabled={savingId === s.id}
                     className="text-green-400 hover:underline disabled:opacity-50"
                   >
-                    {savingId === s.id ? 'Salvando...' : 'Ativar'}
+                    Ativar
                   </button>
                 )}
+                <button
+                  onClick={() => handleDelete(s.id)}
+                  disabled={savingId === s.id}
+                  className="text-oxblood-light hover:underline disabled:opacity-50"
+                >
+                  Excluir
+                </button>
               </div>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateBarberDto } from './dto/update-barber.dto';
 import { SetWorkingHoursDto } from './dto/set-working-hours.dto';
@@ -71,5 +71,23 @@ export class BarbersService {
     return this.prisma.workingHour.findUnique({
       where: { barberId_weekday: { barberId, weekday } },
     });
+  }
+
+  async remove(id: number) {
+    const barber = await this.findOne(id);
+
+    const appointmentsCount = await this.prisma.appointment.count({
+      where: { barberId: id },
+    });
+
+    if (appointmentsCount > 0) {
+      throw new BadRequestException(
+        'Este barbeiro possui agendamentos no histórico e não pode ser excluído permanentemente. Você pode apenas desativá-lo.',
+      );
+    }
+
+    // Ao apagar o User, a relação BarberProfile é apagada em cascata (onDelete: Cascade no schema)
+    await this.prisma.user.delete({ where: { id: barber.user.id } });
+    return { message: 'Barbeiro excluído com sucesso' };
   }
 }

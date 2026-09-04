@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -31,9 +31,18 @@ export class ServicesService {
 
   async remove(id: number) {
     await this.findOne(id);
-    // Em vez de excluir de fato (poderia quebrar histórico de agendamentos),
-    // apenas desativa o serviço — prática comum em sistemas de agendamento.
-    await this.prisma.service.update({ where: { id }, data: { active: false } });
-    return { message: 'Serviço desativado com sucesso' };
+
+    const appointmentsCount = await this.prisma.appointment.count({
+      where: { serviceId: id },
+    });
+
+    if (appointmentsCount > 0) {
+      throw new BadRequestException(
+        'Este serviço possui agendamentos no histórico e não pode ser excluído permanentemente. Você pode apenas desativá-lo.',
+      );
+    }
+
+    await this.prisma.service.delete({ where: { id } });
+    return { message: 'Serviço excluído com sucesso' };
   }
 }
