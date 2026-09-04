@@ -11,7 +11,7 @@ const slides: Slide[] = [
   { type: 'image', src: '/carousel/foto1.avif', alt: 'Corte e Estilo' },
   { type: 'image', src: '/carousel/foto2.avif', alt: 'Ambiente da Barbearia' },
   { type: 'image', src: '/carousel/foto3.avif', alt: 'Barba e Acabamento' },
-  { type: 'video', src: '/carousel/video1.mp4', poster: '/carousel/thumb.jpg' },
+  { type: 'video', src: '/carousel/video1.mp4', poster: "/carrousel/thumb.jpg" },
 ];
 
 export default function HeroCarousel() {
