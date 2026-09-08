@@ -31,11 +31,11 @@ export class UsersController {
     return this.usersService.create(dto);
   }
 
-  // ADMIN vê todos; permite filtrar por role (?role=CLIENTE)
+  // ADMIN vê todos; permite filtrar por role (?role=CLIENTE) e busca (?search=nome)
   @Get()
   @Roles(Role.ADMIN, Role.BARBEIRO)
-  findAll(@Query('role') role?: Role) {
-    return this.usersService.findAll(role);
+  findAll(@Query('role') role?: Role, @Query('search') search?: string) {
+    return this.usersService.findAll(role, search);
   }
 
   // Qualquer usuário autenticado pode ver os próprios dados

@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
+import { registerPushTokenAsync } from '../services/notifications';
 
 export interface AuthUser {
   id: number;
@@ -19,13 +20,16 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     AsyncStorage.getItem('brabus_user').then((stored) => {
-      if (stored) setUser(JSON.parse(stored));
+      if (stored) {
+        setUser(JSON.parse(stored));
+        registerPushTokenAsync().catch(() => {});
+      }
       setLoading(false);
     });
   }, []);
@@ -34,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem('brabus_token', accessToken);
     await AsyncStorage.setItem('brabus_user', JSON.stringify(authUser));
     setUser(authUser);
+    registerPushTokenAsync().catch(() => {});
   }
 
   async function login(email: string, password: string) {
@@ -60,9 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext value={{ user, loading, login, register, logout }}>
       {children}
-    </AuthContext.Provider>
+    </AuthContext>
   );
 }
 
@@ -71,3 +76,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth precisa estar dentro de um AuthProvider');
   return ctx;
 }
+

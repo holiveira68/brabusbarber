@@ -48,7 +48,7 @@ export default function LandingPage() {
   return (
     <main>
       {/* NAV */}
-      <header className="flex items-center justify-between px-6 py-6 md:px-16">
+      <header className="flex items-center justify-between px-6 py-4 md:px-16">
         <span className="flex items-center gap-3 font-display text-xl tracking-widest2 text-bone">
           <Image src="/LogoBrabus.png" alt="BRABUS BARBER" width={124} height={122} priority />
           BRABUS<span className="text-brass"> BARBER</span>
@@ -59,9 +59,9 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="grid gap-8 px-6 pb-20 pt-10 lg:grid-cols-3 items-center md:px-12 md:pt-16">
+      <section className="grid gap-8 px-6 pb-20 pt-4 lg:grid-cols-3 items-center md:px-12 md:pt-6">
         <div className="flex flex-col justify-center">
-          <span className="ticket-number mb-4">Nº 001 — SISTEMA DE AGENDAMENTO</span>
+          <span className="ticket-number mb-4">SISTEMA DE AGENDAMENTO</span>
           <h1 className="text-5xl leading-[1.05] text-bone md:text-6xl">
             CORTE MARCADO
             <br />

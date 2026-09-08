@@ -7,17 +7,22 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentStatusDto } from './dto/update-appointment-status.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AppointmentStatus, Role } from '@prisma/client';
 
 const appointmentInclude = {
   client: { select: { id: true, name: true, phone: true, email: true } },
   barber: { include: { user: { select: { id: true, name: true } } } },
   service: true,
+  review: true,
 };
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   // Soma minutos a um horário "HH:mm" e devolve outro "HH:mm"
   private addMinutes(time: string, minutes: number): string {
@@ -191,11 +196,16 @@ export class AppointmentsService {
       }
     }
 
-    return this.prisma.appointment.update({
+    const updated = await this.prisma.appointment.update({
       where: { id },
       data: { status: dto.status },
       include: appointmentInclude,
     });
+
+    // Dispara notificação push assíncrona para o cliente
+    this.notificationsService.notifyStatusChange(id, dto.status).catch(() => {});
+
+    return updated;
   }
 
   async remove(id: number) {

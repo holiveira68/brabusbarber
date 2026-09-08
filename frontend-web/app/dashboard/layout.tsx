@@ -11,6 +11,7 @@ const links = [
   { href: '/dashboard/agenda', label: 'Agenda' },
   { href: '/dashboard/servicos', label: 'Serviços' },
   { href: '/dashboard/barbeiros', label: 'Barbeiros' },
+  { href: '/dashboard/usuarios', label: 'Usuários' },
   { href: '/dashboard/relatorios', label: 'Relatórios' },
 ];
 
@@ -41,7 +42,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex flex-1 flex-col gap-1">
           {links
-            .filter((l) => user.role === 'ADMIN' || l.href !== '/dashboard/relatorios')
+            .filter(
+              (l) =>
+                user.role === 'ADMIN' ||
+                (l.href !== '/dashboard/relatorios' && l.href !== '/dashboard/usuarios'),
+            )
             .map((l) => {
               const active = pathname === l.href;
               return (

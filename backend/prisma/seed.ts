@@ -68,7 +68,7 @@ async function main() {
   });
 
   // --- Cliente de teste ---
-  await prisma.user.upsert({
+  const clienteUser = await prisma.user.upsert({
     where: { email: 'cliente@teste.com' },
     update: {},
     create: {
@@ -123,6 +123,33 @@ async function main() {
       });
     }
   }
+
+  // --- Agendamento concluído com avaliação de exemplo ---
+  const apptConcluido = await prisma.appointment.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      clientId: clienteUser.id,
+      barberId: barbeiro1.id,
+      serviceId: servicosCriados[0].id,
+      date: new Date('2026-09-01T00:00:00'),
+      startTime: '10:00',
+      endTime: '10:40',
+      status: 'CONCLUIDO',
+      notes: 'Corte completo',
+    },
+  });
+
+  await prisma.review.upsert({
+    where: { appointmentId: apptConcluido.id },
+    update: {},
+    create: {
+      appointmentId: apptConcluido.id,
+      clientId: clienteUser.id,
+      rating: 5,
+      comment: 'Atendimento excelente! O corte degradê ficou impecável.',
+    },
+  });
 
   console.log('✅ Seed concluído!');
   console.log('   Admin:    admin@brabusbarber.com / 123456');
