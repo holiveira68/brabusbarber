@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { hostname } from 'os';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,7 +24,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3333;
-  await app.listen(port);
-  console.log(`🪒 BRABUS BARBER API rodando em http://localhost:${port}/api`);
+  const host = process.env.HOSTNAME;
+  await app.listen(port, host as string);
+
+  console.log(`🪒 BRABUS BARBER API rodando em http://${host}:${port}/api`);
 }
 bootstrap();

@@ -31,8 +31,11 @@ export class ServicesController {
 
   // Rota pública — necessária para o app mostrar o catálogo de serviços
   @Get()
-  findAll(@Query('active') active?: string) {
-    return this.servicesService.findAll(active === 'true');
+  findAll(@Query('active') active?: string, @Query('barberId') barberId?: string) {
+    return this.servicesService.findAll(
+      active === 'true',
+      barberId ? Number(barberId) : undefined,
+    );
   }
 
   @Get(':id')

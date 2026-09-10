@@ -43,8 +43,12 @@ export default function BookingScreen({ route, navigation }: any) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get<Service[]>('/services?active=true').then(setServices);
-  }, []);
+    if (barberId) {
+      api.get<Service[]>(`/services?active=true&barberId=${barberId}`).then(setServices);
+    } else {
+      api.get<Service[]>('/services?active=true').then(setServices);
+    }
+  }, [barberId]);
 
   useEffect(() => {
     if (!selectedService || !selectedDate) {
@@ -73,7 +77,7 @@ export default function BookingScreen({ route, navigation }: any) {
         date: toISODate(selectedDate),
         startTime: selectedSlot,
       });
-      navigation.navigate('Appointments');
+      navigation.navigate('Tabs', { screen: 'Appointments' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível agendar');
     } finally {
@@ -87,22 +91,26 @@ export default function BookingScreen({ route, navigation }: any) {
       <Text style={styles.title}>{barberName}</Text>
 
       <Text style={styles.sectionLabel}>1. Escolha o serviço</Text>
-      <View style={styles.chipsWrap}>
-        {services.map((s) => (
-          <Pressable
-            key={s.id}
-            onPress={() => setSelectedService(s)}
-            style={[styles.serviceCard, selectedService?.id === s.id && styles.serviceCardActive]}
-          >
-            <Text style={[styles.serviceName, selectedService?.id === s.id && { color: colors.brass }]}>
-              {s.name}
-            </Text>
-            <Text style={styles.serviceMeta}>
-              {s.durationMinutes} min · R$ {Number(s.price).toFixed(2)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      {services.length === 0 ? (
+        <Text style={styles.empty}>Nenhum serviço disponível para este barbeiro.</Text>
+      ) : (
+        <View style={styles.chipsWrap}>
+          {services.map((s) => (
+            <Pressable
+              key={s.id}
+              onPress={() => setSelectedService(s)}
+              style={[styles.serviceCard, selectedService?.id === s.id && styles.serviceCardActive]}
+            >
+              <Text style={[styles.serviceName, selectedService?.id === s.id && { color: colors.brass }]}>
+                {s.name}
+              </Text>
+              <Text style={styles.serviceMeta}>
+                {s.durationMinutes} min · R$ {Number(s.price).toFixed(2)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <Text style={styles.sectionLabel}>2. Escolha a data</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>

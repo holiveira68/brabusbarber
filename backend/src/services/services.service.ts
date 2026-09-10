@@ -11,9 +11,21 @@ export class ServicesService {
     return this.prisma.service.create({ data: dto });
   }
 
-  findAll(onlyActive = false) {
+  findAll(onlyActive = false, barberId?: number) {
+    const where: any = {};
+    if (onlyActive) {
+      where.active = true;
+    }
+    if (barberId) {
+      where.barbers = {
+        some: {
+          barberId,
+        },
+      };
+    }
+
     return this.prisma.service.findMany({
-      where: onlyActive ? { active: true } : undefined,
+      where,
       orderBy: { name: 'asc' },
     });
   }
