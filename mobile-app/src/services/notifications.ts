@@ -18,13 +18,7 @@ export async function registerPushTokenAsync() {
 
     if (!Notifications || Platform.OS === 'web') return;
 
-    // A partir do SDK 53, notificações push remotas não funcionam no Expo Go (Android/iOS)
-    if (Constants.appOwnership === 'expo') {
-      console.log('[Push] Notificações push remotas são desativadas no Expo Go a partir do SDK 53. Use um Development Build para testá-las.');
-      return;
-    }
-
-    // Configura o comportamento ao receber notificação com o app aberto
+    // Configura o comportamento de alertas para notificações (locais ou remotas)
     try {
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -34,6 +28,12 @@ export async function registerPushTokenAsync() {
         }),
       });
     } catch {}
+
+    // A partir do SDK 53, notificações push REMOTAS via servidor não funcionam no Expo Go (Android/iOS)
+    if (Constants.appOwnership === 'expo') {
+      console.log('[Push] Notificações push remotas são desativadas no Expo Go a partir do SDK 53. Notificações locais funcionam normalmente.');
+      return;
+    }
 
     let existingStatus = 'denied';
     try {
