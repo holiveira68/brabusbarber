@@ -1,9 +1,10 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { api } from './api';
 
 /**
  * Solicita permissões e registra o token de notificação push do Expo no servidor.
- * Protegido contra falhas em emuladores ou ambientes sem EAS projectId.
+ * Protegido contra falhas em emuladores, Expo Go (SDK 53+) ou ambientes sem EAS projectId.
  */
 export async function registerPushTokenAsync() {
   try {
@@ -16,6 +17,12 @@ export async function registerPushTokenAsync() {
     }
 
     if (!Notifications || Platform.OS === 'web') return;
+
+    // A partir do SDK 53, notificações push remotas não funcionam no Expo Go (Android/iOS)
+    if (Constants.appOwnership === 'expo') {
+      console.log('[Push] Notificações push remotas são desativadas no Expo Go a partir do SDK 53. Use um Development Build para testá-las.');
+      return;
+    }
 
     // Configura o comportamento ao receber notificação com o app aberto
     try {
@@ -53,7 +60,7 @@ export async function registerPushTokenAsync() {
       const tokenData = await Notifications.getExpoPushTokenAsync();
       pushToken = tokenData?.data;
     } catch (err: any) {
-      console.log('[Push] Aviso: Não foi possível obter o Expo Push Token (esperado em emuladores sem EAS projectId):', err.message || err);
+      console.log('[Push] Aviso: Não foi possível obter o Expo Push Token:', err.message || err);
     }
 
     if (pushToken) {
@@ -61,6 +68,6 @@ export async function registerPushTokenAsync() {
       await api.patch('/notifications/push-token', { pushToken }).catch(() => {});
     }
   } catch (error) {
-    console.log('[Push] Erro capturado e isolado ao inicializar notificações:', error);
+      console.log('[Push] Erro capturado e isolado ao inicializar notificações:', error);
   }
 }
