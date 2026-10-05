@@ -43,6 +43,7 @@ model User {
   appointmentsAsClient Appointment[] @relation("ClientAppointments")
 
   reviews Review[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -136,4 +137,18 @@ model Review {
   createdAt     DateTime    @default(now())
 
   @@map("reviews")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  type      String?  @default("SISTEMA")
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@map("notifications")
 }

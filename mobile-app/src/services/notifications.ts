@@ -1,24 +1,33 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { api } from './api';
 
 /**
  * Solicita permissões e registra o token de notificação push do Expo no servidor.
- * Protegido contra falhas em emuladores, Expo Go (SDK 53+) ou ambientes sem EAS projectId.
+ * Protegido contra falhas em emuladores, Expo Go (SDK 53+) ou ambientes sem EAS.
  */
 export async function registerPushTokenAsync() {
   try {
+    // No Expo Go (SDK 53+), notificações push remotas foram removidas.
+    // Usamos as notificações via banco de dados (tabela Notification no MySQL).
+    const isExpoGo =
+      Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+      Constants.appOwnership === 'expo';
+
+    if (isExpoGo) {
+      // Silenciosamente ignora a tentativa de gerar Push Token no Expo Go
+      return;
+    }
+
     let Notifications: any = null;
     try {
       Notifications = require('expo-notifications');
     } catch {
-      console.log('[Push] Módulo expo-notifications não instalado.');
       return;
     }
 
     if (!Notifications || Platform.OS === 'web') return;
 
-    // Configura o comportamento de alertas para notificações (locais ou remotas)
     try {
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -28,12 +37,6 @@ export async function registerPushTokenAsync() {
         }),
       });
     } catch {}
-
-    // A partir do SDK 53, notificações push REMOTAS via servidor não funcionam no Expo Go (Android/iOS)
-    if (Constants.appOwnership === 'expo') {
-      console.log('[Push] Notificações push remotas são desativadas no Expo Go a partir do SDK 53. Notificações locais funcionam normalmente.');
-      return;
-    }
 
     let existingStatus = 'denied';
     try {
@@ -51,7 +54,6 @@ export async function registerPushTokenAsync() {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('[Push] Permissão de notificação não concedida.');
       return;
     }
 
@@ -59,15 +61,15 @@ export async function registerPushTokenAsync() {
     try {
       const tokenData = await Notifications.getExpoPushTokenAsync();
       pushToken = tokenData?.data;
-    } catch (err: any) {
-      console.log('[Push] Aviso: Não foi possível obter o Expo Push Token:', err.message || err);
+    } catch {
+      // Ignora erro se não for possível obter o token
     }
 
     if (pushToken) {
-      console.log('[Push] Token do Expo registrado:', pushToken);
       await api.patch('/notifications/push-token', { pushToken }).catch(() => {});
     }
   } catch (error) {
-      console.log('[Push] Erro capturado e isolado ao inicializar notificações:', error);
+    // Isolamento completo de erros de Push
   }
 }
+

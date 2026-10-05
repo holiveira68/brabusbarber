@@ -11,7 +11,9 @@ import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import BookingScreen from '../screens/BookingScreen';
 import AppointmentsScreen from '../screens/AppointmentsScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 const AuthStack = createNativeStackNavigator();
 const RootStack = createNativeStackNavigator();
@@ -41,15 +43,24 @@ function AuthNavigator() {
 function MainTabs() {
   return (
     <Tabs.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: { backgroundColor: colors.inkSoft, borderTopColor: colors.border },
         tabBarActiveTintColor: colors.brass,
         tabBarInactiveTintColor: colors.boneMuted,
-      }}
+        tabBarIcon: ({ color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = 'help-outline';
+          if (route.name === 'Início') iconName = 'home-outline';
+          else if (route.name === 'Appointments') iconName = 'calendar-outline';
+          else if (route.name === 'Notificações') iconName = 'notifications-outline';
+          else if (route.name === 'Perfil') iconName = 'person-outline';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
     >
       <Tabs.Screen name="Início" component={HomeScreen} />
       <Tabs.Screen name="Appointments" component={AppointmentsScreen} options={{ title: 'Agendamentos' }} />
+      <Tabs.Screen name="Notificações" component={NotificationsScreen} options={{ title: 'Notificações' }} />
       <Tabs.Screen name="Perfil" component={ProfileScreen} />
     </Tabs.Navigator>
   );

@@ -39,7 +39,8 @@ Cada pasta tem seu próprio `README.md` com instruções detalhadas de setup.
    funcionarem.
 2. **Site** — `cd frontend-web && npm install && npm run dev`. Login com
    `admin@brabusbarber.com` / `123456` (criado pelo seed).
-3. **App mobile** — `cd mobile-app && npm install && npx expo start`.
+3. **App mobile** 
+— `cd mobile-app && npm install && npx expo start`.
    **Atenção**: ajuste a URL da API em `src/services/api.ts` para o IP da
    sua máquina na rede local antes de testar em um celular físico (detalhes
    no README do mobile-app).

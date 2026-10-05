@@ -24,9 +24,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3333;
-  const host = process.env.HOSTNAME;
-  await app.listen(port, host as string);
+  const host = process.env.HOSTNAME || 'localhost';
+  await app.listen(port, '0.0.0.0');
 
-  console.log(`🪒 BRABUS BARBER API rodando em http://${host}:${port}/api`);
+  console.log(`🪒 BRABUS BARBER API rodando em http://localhost:${port}/api (Rede: http://${host}:${port}/api)`);
 }
 bootstrap();

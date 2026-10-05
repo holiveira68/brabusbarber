@@ -69,6 +69,60 @@ export class NotificationsService {
   }
 
   /**
+   * Cria e salva uma notificação no banco de dados MySQL para um determinado usuário.
+   */
+  async createNotification(
+    userId: number,
+    title: string,
+    message: string,
+    type: string = 'SISTEMA',
+  ) {
+    try {
+      return await this.prisma.notification.create({
+        data: {
+          userId,
+          title,
+          message,
+          type,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Erro ao salvar notificação no banco de dados:', error);
+    }
+  }
+
+  /**
+   * Busca as notificações salvas de um usuário no banco de dados.
+   */
+  async getUserNotifications(userId: number) {
+    return this.prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
+
+  /**
+   * Marca uma notificação específica como lida.
+   */
+  async markAsRead(userId: number, notificationId: number) {
+    return this.prisma.notification.updateMany({
+      where: { id: notificationId, userId },
+      data: { read: true },
+    });
+  }
+
+  /**
+   * Marca todas as notificações do usuário como lidas.
+   */
+  async markAllAsRead(userId: number) {
+    return this.prisma.notification.updateMany({
+      where: { userId, read: false },
+      data: { read: true },
+    });
+  }
+
+  /**
    * Cron Job de Lembretes Automáticos: Executa a cada 5 minutos
    * Verificando se há agendamentos nos próximos ~60 minutos para alertar o cliente.
    */
@@ -94,22 +148,30 @@ export class NotificationsService {
       const targetEndMin = now.getHours() * 60 + now.getMinutes() + 70;
 
       for (const appt of appointments) {
-        if (!appt.client?.pushToken) continue;
+        if (!appt.client?.id) continue;
 
         const [h, m] = appt.startTime.split(':').map(Number);
         const apptMin = h * 60 + m;
 
         if (apptMin >= targetStartMin && apptMin <= targetEndMin) {
+          const title = '⏰ Lembrete de Agendamento BRABUS BARBER';
+          const body = `Olá ${appt.client.name}, seu agendamento de ${appt.service.name} com ${appt.barber.user.name} é hoje às ${appt.startTime}!`;
+
           this.logger.log(
             `Disparando lembrete automático para ${appt.client.name} - Agendamento das ${appt.startTime}`,
           );
 
-          await this.sendExpoPushNotification(
-            [appt.client.pushToken],
-            '⏰ Lembrete de Agendamento BRABUS BARBER',
-            `Olá ${appt.client.name}, seu agendamento de ${appt.service.name} com ${appt.barber.user.name} é hoje às ${appt.startTime}!`,
-            { appointmentId: appt.id, type: 'REMINDER' },
-          );
+          // Salva no banco de dados MySQL para o app mobile ler na aba Notificações
+          await this.createNotification(appt.client.id, title, body, 'LEMBRETE');
+
+          if (appt.client.pushToken) {
+            await this.sendExpoPushNotification(
+              [appt.client.pushToken],
+              title,
+              body,
+              { appointmentId: appt.id, type: 'REMINDER' },
+            );
+          }
         }
       }
     } catch (error) {
@@ -118,20 +180,20 @@ export class NotificationsService {
   }
 
   /**
-   * Dispara notificação push quando o status do agendamento mudar.
+   * Dispara notificação push e salva no banco de dados quando o status do agendamento mudar.
    */
   async notifyStatusChange(appointmentId: number, newStatus: string) {
     try {
       const appt = await this.prisma.appointment.findUnique({
         where: { id: appointmentId },
         include: {
-          client: { select: { name: true, pushToken: true } },
+          client: { select: { id: true, name: true, pushToken: true } },
           barber: { include: { user: { select: { name: true } } } },
           service: { select: { name: true } },
         },
       });
 
-      if (!appt || !appt.client?.pushToken) return;
+      if (!appt || !appt.client?.id) return;
 
       let title = 'Atualização no seu Agendamento';
       let body = `Seu agendamento de ${appt.service.name} mudou para ${newStatus}.`;
@@ -147,12 +209,17 @@ export class NotificationsService {
         body = `Obrigado por escolher a BRABUS BARBER! Avalie o atendimento prestado por ${appt.barber.user.name}.`;
       }
 
-      await this.sendExpoPushNotification(
-        [appt.client.pushToken],
-        title,
-        body,
-        { appointmentId, status: newStatus, type: 'STATUS_CHANGE' },
-      );
+      // Salva a notificação na tabela MySQL
+      await this.createNotification(appt.client.id, title, body, 'STATUS');
+
+      if (appt.client.pushToken) {
+        await this.sendExpoPushNotification(
+          [appt.client.pushToken],
+          title,
+          body,
+          { appointmentId, status: newStatus, type: 'STATUS_CHANGE' },
+        );
+      }
     } catch (error) {
       this.logger.error('Erro ao notificar alteração de status:', error);
     }

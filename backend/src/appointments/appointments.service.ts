@@ -97,7 +97,7 @@ export class AppointmentsService {
       throw new BadRequestException('Este horário já está ocupado. Escolha outro.');
     }
 
-    return this.prisma.appointment.create({
+    const created = await this.prisma.appointment.create({
       data: {
         clientId,
         barberId: dto.barberId,
@@ -109,6 +109,19 @@ export class AppointmentsService {
       },
       include: appointmentInclude,
     });
+
+    // Salva notificação no banco de dados para o cliente
+    const dateStr = requestedDate.toISOString().split('T')[0].split('-').reverse().join('/');
+    this.notificationsService
+      .createNotification(
+        clientId,
+        '📅 Agendamento Realizado',
+        `Seu agendamento de ${created.service.name} com ${created.barber.user.name} para o dia ${dateStr} às ${dto.startTime} foi realizado com sucesso!`,
+        'AGENDAMENTO',
+      )
+      .catch(() => {});
+
+    return created;
   }
 
   // Retorna os horários de "startTime" possíveis (livres) para um barbeiro/serviço/data
