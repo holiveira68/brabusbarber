@@ -64,6 +64,11 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  @Delete('me')
+  deleteMe(@CurrentUser() user: { userId: number }) {
+    return this.usersService.deleteMe(user.userId);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {

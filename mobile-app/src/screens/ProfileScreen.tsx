@@ -1,12 +1,48 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { colors } from '../theme/colors';
 import { TicketLabel } from '../components/TicketLabel';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      'Eliminar Conta',
+      'Tem certeza que deseja eliminar sua conta? Esta ação não pode ser desfeita e só é permitida se você não possuir agendamentos ou registros vinculados no banco de dados.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeleting(true);
+              await deleteAccount();
+              Alert.alert('Conta Eliminada', 'Sua conta foi eliminada com sucesso.');
+            } catch (err: any) {
+              Alert.alert(
+                'Não foi possível eliminar a conta',
+                err.message || 'Erro ao tentar eliminar a conta.'
+              );
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+  const roleLabel =
+    user?.role === 'BARBEIRO'
+      ? 'Barbeiro'
+      : user?.role === 'ADMIN'
+      ? 'Administrador'
+      : 'Cliente';
 
   return (
     <View style={styles.screen}>
@@ -20,11 +56,19 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Tipo de conta</Text>
-          <Text style={styles.value}>Cliente</Text>
+          <Text style={styles.value}>{roleLabel}</Text>
         </View>
       </View>
 
       <Button label="SAIR DA CONTA" variant="outline" onPress={logout} style={{ marginTop: 24 }} />
+
+      <Button
+        label="ELIMINAR CONTA"
+        variant="danger"
+        loading={deleting}
+        onPress={handleDeleteAccount}
+        style={{ marginTop: 12 }}
+      />
     </View>
   );
 }
