@@ -40,10 +40,17 @@ export class BarbersService {
   }
 
   async update(id: number, dto: UpdateBarberDto) {
-    await this.findOne(id);
-    const { serviceIds, ...rest } = dto;
+    const barber = await this.findOne(id);
+    const { serviceIds, avatarUrl, ...rest } = dto;
 
     await this.prisma.barberProfile.update({ where: { id }, data: rest });
+
+    if (avatarUrl !== undefined) {
+      await this.prisma.user.update({
+        where: { id: barber.user.id },
+        data: { avatarUrl },
+      });
+    }
 
     if (serviceIds) {
       // Substitui totalmente a lista de serviços vinculados ao barbeiro

@@ -10,6 +10,10 @@ export class UpdateBarberDto {
   specialties?: string;
 
   @IsOptional()
+  @IsString()
+  avatarUrl?: string;
+
+  @IsOptional()
   @IsBoolean()
   active?: boolean;
 

@@ -25,25 +25,27 @@ async function main() {
   // --- Barbeiros ---
   const barbeiro1User = await prisma.user.upsert({
     where: { email: 'marcello@brabusbarber.com' },
-    update: {},
+    update: { avatarUrl: '/barbers/marcello.png' },
     create: {
       name: 'Marcello Gomes',
       email: 'marcello@brabusbarber.com',
       password: senhaPadrao,
       role: Role.BARBEIRO,
       phone: '(12) 99999-0002',
+      avatarUrl: '/barbers/marcello.png',
     },
   });
 
   const barbeiro2User = await prisma.user.upsert({
     where: { email: 'larissa@brabusbarber.com' },
-    update: {},
+    update: { avatarUrl: '/team/gabriel.png' },
     create: {
       name: 'Larissa Procopio',
       email: 'larissa@brabusbarber.com',
       password: senhaPadrao,
       role: Role.BARBEIRO,
       phone: '(12) 99999-0003',
+      avatarUrl: '/team/gabriel.png',
     },
   });
 

@@ -34,6 +34,44 @@ const problemas = [
   },
 ];
 
+const equipe = [
+  {
+    nome: 'Lucas Andrade',
+    cargo: 'Desenvolvedor Full Stack & Líder',
+    foto: '/team/lucas.png',
+    descricao:
+      'Responsável pela arquitetura da API em NestJS, modelagem do banco de dados MySQL com Prisma e integração das regras de negócio do sistema.',
+  },
+  {
+    nome: 'Matheus Oliveira',
+    cargo: 'Desenvolvedor Mobile (React Native)',
+    foto: '/team/matheus.png',
+    descricao:
+      'Responsável pela criação do aplicativo de agendamentos para clientes em Expo / React Native, controle de estado e integração de notificações.',
+  },
+  {
+    nome: 'Gabriel Santos',
+    cargo: 'Designer UI/UX & Frontend',
+    foto: '/team/gabriel.png',
+    descricao:
+      'Criador da identidade visual da BRABUS BARBER, cuidando da paleta de cores, tipografia e prototipagem das interfaces web em Next.js.',
+  },
+  {
+    nome: 'Felipe Costa',
+    cargo: 'Engenheiro de Banco de Dados & QA',
+    foto: '/team/felipe.png',
+    descricao:
+      'Responsável pela estrutura de migrações do MySQL, relacionamentos entre entidades e garantia de qualidade com testes automatizados de API.',
+  },
+  {
+    nome: 'Vinícius Rocha',
+    cargo: 'DevOps & Documentação Técnica',
+    foto: '/team/vinicius.png',
+    descricao:
+      'Encarregado da infraestrutura dos ambientes de desenvolvimento, execução dos scripts e documentação arquitetural do Projeto Integrador.',
+  },
+];
+
 export default function LandingPage() {
   const [servicos, setServicos] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,9 +91,17 @@ export default function LandingPage() {
           <Image src="/LogoBrabus.png" alt="BRABUS BARBER" width={124} height={122} priority />
           BRABUS<span className="text-brass"> BARBER</span>
         </span>
-        <Link href="/login" className="btn-outline text-xs">
-          Área da equipe
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/sobre"
+            className="font-display text-sm tracking-wide text-bone-muted hover:text-brass transition"
+          >
+            Sobre Nós
+          </Link>
+          <Link href="/login" className="btn-outline text-xs">
+            Área da equipe
+          </Link>
+        </div>
       </header>
 
       {/* HERO */}
@@ -213,6 +259,49 @@ export default function LandingPage() {
               </div>
             ))
           )}
+        </div>
+      </section>
+
+      <div className="barber-stripe" />
+
+      {/* SOBRE NÓS / NOSSO GRUPO */}
+      <section id="sobre-nos" className="bg-ink-soft px-6 py-20 md:px-16 border-t border-bone/10">
+        <div className="flex flex-col items-center text-center mb-12">
+          <span className="ticket-number">NOSSO GRUPO</span>
+          <h2 className="mt-3 text-3xl text-bone md:text-4xl">
+            SOBRE <span className="text-brass">NÓS</span>
+          </h2>
+          <p className="mt-4 max-w-2xl text-sm text-bone-muted">
+            Projeto Integrador desenvolvido pelos alunos do Curso Técnico em Informática para Internet.
+            Conheça as mentes por trás do sistema de agendamento BRABUS BARBER.
+          </p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          {equipe.map((membro) => (
+            <div
+              key={membro.nome}
+              className="card group hover:border-brass/50 transition-all duration-300 flex flex-col items-center text-center p-6 bg-ink-surface/90"
+            >
+              <div className="relative w-24 h-24 mb-4 overflow-hidden rounded-full border-2 border-brass/40 shadow-md group-hover:scale-105 group-hover:border-brass transition-all duration-300">
+                <Image
+                  src={membro.foto}
+                  alt={membro.nome}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <h3 className="font-display text-base text-bone group-hover:text-brass transition font-bold">
+                {membro.nome}
+              </h3>
+              <span className="mt-1 text-[11px] font-semibold text-brass tracking-wider uppercase bg-brass/10 px-2 py-0.5 rounded border border-brass/20">
+                {membro.cargo}
+              </span>
+              <p className="mt-3 text-xs text-bone-muted leading-relaxed">
+                {membro.descricao}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 

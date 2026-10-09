@@ -13,6 +13,7 @@ const links = [
   { href: '/dashboard/barbeiros', label: 'Barbeiros' },
   { href: '/dashboard/usuarios', label: 'Usuários' },
   { href: '/dashboard/relatorios', label: 'Relatórios' },
+  { href: '/sobre', label: 'Sobre Nós' },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
