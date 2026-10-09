@@ -12,7 +12,7 @@ const equipe = [
       'Responsável pela arquitetura da API em NestJS, modelagem do banco de dados MySQL com Prisma e integração das regras de negócio do sistema.',
   },
   {
-    nome: 'Larissa Procopio',
+    nome: 'Larissa Procópio',
     cargo: 'Desenvolvedor Mobile (React Native)',
     foto: '/team/larissa.jpg',
     descricao:
