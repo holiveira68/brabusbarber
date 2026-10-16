@@ -36,37 +36,37 @@ const problemas = [
 
 const equipe = [
   {
-    nome: 'Lucas Andrade',
+    nome: 'Helder Oliveira',
     cargo: 'Desenvolvedor Full Stack & Líder',
-    foto: '/team/lucas.png',
+    foto: '/team/helder.jpg',
     descricao:
       'Responsável pela arquitetura da API em NestJS, modelagem do banco de dados MySQL com Prisma e integração das regras de negócio do sistema.',
   },
   {
-    nome: 'Matheus Oliveira',
+    nome: 'Larissa Procópio',
     cargo: 'Desenvolvedor Mobile (React Native)',
-    foto: '/team/matheus.png',
+    foto: '/team/larissa.jpg',
     descricao:
       'Responsável pela criação do aplicativo de agendamentos para clientes em Expo / React Native, controle de estado e integração de notificações.',
   },
   {
-    nome: 'Gabriel Santos',
+    nome: 'Laura Bevilaqua',
     cargo: 'Designer UI/UX & Frontend',
-    foto: '/team/gabriel.png',
+    foto: '/team/laura.jpg',
     descricao:
       'Criador da identidade visual da BRABUS BARBER, cuidando da paleta de cores, tipografia e prototipagem das interfaces web em Next.js.',
   },
   {
-    nome: 'Felipe Costa',
+    nome: 'Marcello Gomes',
     cargo: 'Engenheiro de Banco de Dados & QA',
-    foto: '/team/felipe.png',
+    foto: '/team/marcello.jpg',
     descricao:
       'Responsável pela estrutura de migrações do MySQL, relacionamentos entre entidades e garantia de qualidade com testes automatizados de API.',
   },
   {
-    nome: 'Vinícius Rocha',
+    nome: 'Mayara Batista',
     cargo: 'DevOps & Documentação Técnica',
-    foto: '/team/vinicius.png',
+    foto: '/team/mayara.jpg',
     descricao:
       'Encarregado da infraestrutura dos ambientes de desenvolvimento, execução dos scripts e documentação arquitetural do Projeto Integrador.',
   },

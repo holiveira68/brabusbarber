@@ -21,14 +21,14 @@ const equipe = [
   {
     nome: 'Laura Bevilaqua',
     cargo: 'Designer UI/UX & Frontend',
-    foto: '/team/gabriel.png',
+    foto: '/team/laura.jpg',
     descricao:
       'Criador da identidade visual da BRABUS BARBER, cuidando da paleta de cores, tipografia e prototipagem das interfaces web em Next.js.',
   },
   {
     nome: 'Marcello Gomes',
     cargo: 'Banco de Dados & QA',
-    foto: '/team/felipe.png',
+    foto: '/team/marcello.jpg',
     descricao:
       'Responsável pela estrutura de migrações do MySQL, relacionamentos entre entidades e garantia de qualidade com testes automatizados de API.',
   },
