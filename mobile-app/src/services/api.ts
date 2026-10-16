@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // computador — troque pelo IP da sua máquina na rede local (ex: 192.168.x.x)
 // ou pelo endereço do túnel do Expo. Veja o README do mobile-app.
 // const API_URL = 'http://10.81.204.24:3333/api';
-const API_URL = 'http://192.168.15.28:3333/api';
+const API_URL = 'http://10.81.204.24:3333/api';
 
 export class ApiError extends Error {
   status: number;
@@ -53,4 +53,6 @@ export const api = {
     request<T>(path, { method: 'POST', body: data ? JSON.stringify(data) : undefined }),
   patch: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'PATCH', body: data ? JSON.stringify(data) : undefined }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
+

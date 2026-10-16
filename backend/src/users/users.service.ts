@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
 // Campos seguros que devem retornar na resposta da API
 const safeSelect = {
@@ -94,8 +94,93 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-    await this.prisma.user.delete({ where: { id } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        barberProfile: {
+          include: {
+            appointments: { select: { id: true } },
+          },
+        },
+        appointmentsAsClient: { select: { id: true } },
+        reviews: { select: { id: true } },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    const clientAppointmentsCount = user.appointmentsAsClient?.length || 0;
+    const barberAppointmentsCount = user.barberProfile?.appointments?.length || 0;
+    const reviewsCount = user.reviews?.length || 0;
+
+    if (clientAppointmentsCount > 0 || barberAppointmentsCount > 0 || reviewsCount > 0) {
+      const reasons: string[] = [];
+      if (clientAppointmentsCount > 0) {
+        reasons.push(`${clientAppointmentsCount} agendamento(s) como cliente`);
+      }
+      if (barberAppointmentsCount > 0) {
+        reasons.push(`${barberAppointmentsCount} agendamento(s) como barbeiro`);
+      }
+      if (reviewsCount > 0) {
+        reasons.push(`${reviewsCount} avaliação(ões)`);
+      }
+
+      throw new BadRequestException(
+        `Não é possível excluir este usuário pois ele possui registros vinculados no sistema: ${reasons.join(', ')}. Para manter a integridade do histórico da barbearia, o usuário não pode ser excluído permanentemente.`,
+      );
+    }
+
+    try {
+      await this.prisma.user.delete({ where: { id } });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2003'
+      ) {
+        throw new BadRequestException(
+          'Não é possível excluir este usuário pois existem outros registros vinculados a ele no banco de dados.',
+        );
+      }
+      throw error;
+    }
+
     return { message: 'Usuário removido com sucesso' };
+  }
+
+  async deleteMe(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        barberProfile: {
+          include: {
+            appointments: { select: { id: true } },
+          },
+        },
+        appointmentsAsClient: { select: { id: true } },
+        reviews: { select: { id: true } },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    const clientAppointmentsCount = user.appointmentsAsClient?.length || 0;
+    const barberAppointmentsCount = user.barberProfile?.appointments?.length || 0;
+    const reviewsCount = user.reviews?.length || 0;
+
+    if (clientAppointmentsCount > 0 || barberAppointmentsCount > 0 || reviewsCount > 0) {
+      throw new BadRequestException(
+        'Não é possível excluir a conta pois você possui agendamentos ou registros vinculados no banco de dados.',
+      );
+    }
+
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return { message: 'Conta eliminada com sucesso' };
   }
 }

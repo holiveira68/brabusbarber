@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -64,9 +65,22 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  @Delete('me')
+  deleteMe(@CurrentUser() user: { userId: number }) {
+    return this.usersService.deleteMe(user.userId);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: { userId: number },
+  ) {
+    if (user?.userId === id) {
+      throw new BadRequestException(
+        'Você não pode excluir sua própria conta de administrador.',
+      );
+    }
     return this.usersService.remove(id);
   }
 }

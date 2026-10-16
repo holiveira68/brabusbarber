@@ -5,7 +5,7 @@ import { colors } from '../theme/colors';
 interface Props {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'outline';
+  variant?: 'primary' | 'outline' | 'danger';
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
@@ -13,22 +13,28 @@ interface Props {
 
 export function Button({ label, onPress, variant = 'primary', loading, disabled, style }: Props) {
   const isPrimary = variant === 'primary';
+  const isDanger = variant === 'danger';
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.base,
-        isPrimary ? styles.primary : styles.outline,
+        isPrimary ? styles.primary : isDanger ? styles.danger : styles.outline,
         (disabled || loading) && { opacity: 0.5 },
         pressed && { opacity: 0.85 },
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.ink : colors.brass} />
+        <ActivityIndicator color={isPrimary ? colors.ink : isDanger ? colors.bone : colors.brass} />
       ) : (
-        <Text style={[styles.label, isPrimary ? styles.labelPrimary : styles.labelOutline]}>
+        <Text
+          style={[
+            styles.label,
+            isPrimary ? styles.labelPrimary : isDanger ? styles.labelDanger : styles.labelOutline,
+          ]}
+        >
           {label}
         </Text>
       )}
@@ -45,7 +51,9 @@ const styles = StyleSheet.create({
   },
   primary: { backgroundColor: colors.brass },
   outline: { borderWidth: 1, borderColor: colors.border },
+  danger: { backgroundColor: colors.oxblood, borderWidth: 1, borderColor: colors.oxbloodLight },
   label: { fontSize: 14, letterSpacing: 1, fontWeight: '600' },
   labelPrimary: { color: colors.ink },
   labelOutline: { color: colors.bone },
+  labelDanger: { color: colors.bone },
 });

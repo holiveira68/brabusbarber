@@ -26,6 +26,8 @@ export default function UsersAdminPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteError, setDeleteError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -89,6 +91,7 @@ export default function UsersAdminPage() {
 
   const handleOpenDelete = (user: User) => {
     setSelectedUser(user);
+    setDeleteError('');
     setIsDeleteOpen(true);
   };
 
@@ -133,14 +136,21 @@ export default function UsersAdminPage() {
   const handleDeleteConfirm = async () => {
     if (!selectedUser) return;
     try {
+      setIsDeleting(true);
       setError('');
+      setDeleteError('');
       setSuccess('');
       await api.delete(`/users/${selectedUser.id}`);
       setSuccess('Usuário removido com sucesso!');
       setIsDeleteOpen(false);
       loadUsers();
     } catch (err: any) {
-      setError(err.message || 'Erro ao remover usuário.');
+      const msg = err.message || 'Erro ao remover usuário.';
+      setDeleteError(msg);
+      setError(msg);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -480,26 +490,37 @@ export default function UsersAdminPage() {
       {/* MODAL REMOÇÃO */}
       {isDeleteOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-sm rounded-lg border border-red-500/20 bg-ink-soft p-6 space-y-4 text-center">
+          <div className="w-full max-w-md rounded-lg border border-red-500/20 bg-ink-soft p-6 space-y-4 text-center">
             <h2 className="font-display text-lg text-bone">Excluir Usuário?</h2>
             <p className="text-sm text-bone-muted">
               Tem certeza que deseja remover <strong>{selectedUser.name}</strong>? Esta ação não pode ser desfeita.
             </p>
+
+            {deleteError && (
+              <div className="rounded border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400 text-left">
+                {deleteError}
+              </div>
+            )}
+
             <div className="flex justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setIsDeleteOpen(false)}
                 className="rounded px-4 py-2 text-sm text-bone-muted hover:text-bone"
+                disabled={isDeleting}
               >
-                Cancelar
+                {deleteError ? 'Fechar' : 'Cancelar'}
               </button>
-              <button
-                type="button"
-                onClick={handleDeleteConfirm}
-                className="rounded bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
-              >
-                Sim, Excluir
-              </button>
+              {!deleteError && (
+                <button
+                  type="button"
+                  onClick={handleDeleteConfirm}
+                  disabled={isDeleting}
+                  className="rounded bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-50"
+                >
+                  {isDeleting ? 'Excluindo...' : 'Sim, Excluir'}
+                </button>
+              )}
             </div>
           </div>
         </div>

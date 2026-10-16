@@ -9,7 +9,7 @@ interface Barber {
   bio: string | null;
   specialties: string | null;
   active: boolean;
-  user: { name: string; email: string; phone: string | null };
+  user: { name: string; email: string; phone: string | null; avatarUrl: string | null };
   workingHours: { weekday: number; startTime: string; endTime: string }[];
   services: { service: { id: number; name: string } }[];
 }
@@ -34,7 +34,7 @@ interface BarberReviewSummary {
 const weekdayLabels = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sábado'];
 const weekdayShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-const emptyNewBarberForm = { name: '', email: '', password: '', phone: '' };
+const emptyNewBarberForm = { name: '', email: '', password: '', phone: '', avatarUrl: '' };
 
 interface WeekdayRow {
   weekday: number;
@@ -69,6 +69,7 @@ export default function BarbeirosPage() {
   const [createError, setCreateError] = useState<string | null>(null);
 
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string>('');
   const [weekRows, setWeekRows] = useState<WeekdayRow[]>([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
   const [savingSchedule, setSavingSchedule] = useState(false);
@@ -111,6 +112,7 @@ export default function BarbeirosPage() {
         email: newBarberForm.email,
         password: newBarberForm.password,
         phone: newBarberForm.phone || undefined,
+        avatarUrl: newBarberForm.avatarUrl || undefined,
         role: 'BARBEIRO',
       });
       setNewBarberForm(emptyNewBarberForm);
@@ -125,6 +127,7 @@ export default function BarbeirosPage() {
 
   function startEditing(barber: Barber) {
     setEditingId(barber.id);
+    setEditAvatarUrl(barber.user.avatarUrl || '');
     setWeekRows(buildWeekRows(barber.workingHours));
     setSelectedServiceIds(barber.services.map((s) => s.service.id));
     setScheduleError(null);
@@ -159,7 +162,10 @@ export default function BarbeirosPage() {
       }
 
       await api.put(`/barbers/${barberId}/horarios`, { hours });
-      await api.patch(`/barbers/${barberId}`, { serviceIds: selectedServiceIds });
+      await api.patch(`/barbers/${barberId}`, {
+        serviceIds: selectedServiceIds,
+        avatarUrl: editAvatarUrl.trim() || undefined,
+      });
 
       setEditingId(null);
       load();
@@ -251,6 +257,17 @@ export default function BarbeirosPage() {
             </div>
           </div>
 
+          <div>
+            <label className="mb-1 block text-xs text-bone-muted">Foto do barbeiro (URL do Avatar)</label>
+            <input
+              type="text"
+              value={newBarberForm.avatarUrl}
+              onChange={(e) => setNewBarberForm({ ...newBarberForm, avatarUrl: e.target.value })}
+              className="input-field"
+              placeholder="Ex: /barbers/marcello.png ou https://..."
+            />
+          </div>
+
           {createError && <p className="text-sm text-oxblood-light">{createError}</p>}
 
           <button type="submit" disabled={creating} className="btn-primary w-full">
@@ -267,12 +284,25 @@ export default function BarbeirosPage() {
           return (
             <div key={b.id} className="card">
               <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-display text-xl text-bone">{b.user.name}</h2>
-                  {/* Avaliações do Barbeiro */}
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-amber-400">
-                    <span>★ {revSummary.averageRating.toFixed(1)}</span>
-                    <span className="text-bone-muted">({revSummary.totalCount} avaliações)</span>
+                <div className="flex items-center gap-3">
+                  {b.user.avatarUrl ? (
+                    <img
+                      src={b.user.avatarUrl}
+                      alt={b.user.name}
+                      className="h-12 w-12 rounded-full object-cover border border-brass/40 shadow-sm"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brass/10 border border-brass/30 font-display font-bold text-brass text-lg">
+                      {b.user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="font-display text-xl text-bone">{b.user.name}</h2>
+                    {/* Avaliações do Barbeiro */}
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-amber-400">
+                      <span>★ {revSummary.averageRating.toFixed(1)}</span>
+                      <span className="text-bone-muted">({revSummary.totalCount} avaliações)</span>
+                    </div>
                   </div>
                 </div>
                 {isAdmin ? (
@@ -303,8 +333,8 @@ export default function BarbeirosPage() {
                 )}
               </div>
 
-              <p className="mt-1 text-xs text-bone-muted">{b.user.email}</p>
-              {b.specialties && <p className="mt-2 text-xs text-brass">{b.specialties}</p>}
+              <p className="mt-2 text-xs text-bone-muted">{b.user.email}</p>
+              {b.specialties && <p className="mt-1 text-xs text-brass">{b.specialties}</p>}
 
               {editingId !== b.id ? (
                 <>
@@ -367,70 +397,85 @@ export default function BarbeirosPage() {
                       onClick={() => startEditing(b)}
                       className="btn-outline mt-4 w-full text-xs"
                     >
-                      Editar horários e serviços
+                      Editar foto, horários e serviços
                     </button>
                   )}
                 </>
               ) : (
-                <div className="mt-4 border-t border-bone/10 pt-4">
-                  <span className="text-xs text-bone-muted">Dias e horários de atendimento</span>
-                  <div className="mt-3 space-y-2">
-                    {weekRows.map((row) => (
-                      <div key={row.weekday} className="flex items-center gap-2">
-                        <label className="flex w-28 items-center gap-2 text-xs text-bone">
-                          <input
-                            type="checkbox"
-                            checked={row.active}
-                            onChange={(e) => updateRow(row.weekday, { active: e.target.checked })}
-                          />
-                          {weekdayShort[row.weekday]}
-                        </label>
-                        <input
-                          type="time"
-                          value={row.startTime}
-                          disabled={!row.active}
-                          onChange={(e) => updateRow(row.weekday, { startTime: e.target.value })}
-                          className="input-field py-1.5 text-xs disabled:opacity-30"
-                        />
-                        <span className="text-bone-muted">–</span>
-                        <input
-                          type="time"
-                          value={row.endTime}
-                          disabled={!row.active}
-                          onChange={(e) => updateRow(row.weekday, { endTime: e.target.value })}
-                          className="input-field py-1.5 text-xs disabled:opacity-30"
-                        />
-                      </div>
-                    ))}
+                <div className="mt-4 border-t border-bone/10 pt-4 space-y-4">
+                  <div>
+                    <span className="text-xs text-bone-muted block mb-1">URL da Foto do Barbeiro</span>
+                    <input
+                      type="text"
+                      value={editAvatarUrl}
+                      onChange={(e) => setEditAvatarUrl(e.target.value)}
+                      className="input-field py-1.5 text-xs"
+                      placeholder="Ex: /barbers/marcello.png ou https://..."
+                    />
                   </div>
 
-                  <span className="mt-4 block text-xs text-bone-muted">Serviços realizados</span>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {services.map((s) => (
-                      <label
-                        key={s.id}
-                        className={`flex cursor-pointer items-center gap-1.5 rounded-sm border px-2 py-1 text-xs ${
-                          selectedServiceIds.includes(s.id)
-                            ? 'border-brass/50 text-brass'
-                            : 'border-bone/10 text-bone-muted'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          className="hidden"
-                          checked={selectedServiceIds.includes(s.id)}
-                          onChange={() => toggleService(s.id)}
-                        />
-                        {s.name}
-                      </label>
-                    ))}
+                  <div>
+                    <span className="text-xs text-bone-muted">Dias e horários de atendimento</span>
+                    <div className="mt-2 space-y-2">
+                      {weekRows.map((row) => (
+                        <div key={row.weekday} className="flex items-center gap-2">
+                          <label className="flex w-28 items-center gap-2 text-xs text-bone">
+                            <input
+                              type="checkbox"
+                              checked={row.active}
+                              onChange={(e) => updateRow(row.weekday, { active: e.target.checked })}
+                            />
+                            {weekdayShort[row.weekday]}
+                          </label>
+                          <input
+                            type="time"
+                            value={row.startTime}
+                            disabled={!row.active}
+                            onChange={(e) => updateRow(row.weekday, { startTime: e.target.value })}
+                            className="input-field py-1.5 text-xs disabled:opacity-30"
+                          />
+                          <span className="text-bone-muted">–</span>
+                          <input
+                            type="time"
+                            value={row.endTime}
+                            disabled={!row.active}
+                            onChange={(e) => updateRow(row.weekday, { endTime: e.target.value })}
+                            className="input-field py-1.5 text-xs disabled:opacity-30"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="block text-xs text-bone-muted">Serviços realizados</span>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {services.map((s) => (
+                        <label
+                          key={s.id}
+                          className={`flex cursor-pointer items-center gap-1.5 rounded-sm border px-2 py-1 text-xs ${
+                            selectedServiceIds.includes(s.id)
+                              ? 'border-brass/50 text-brass'
+                              : 'border-bone/10 text-bone-muted'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={selectedServiceIds.includes(s.id)}
+                            onChange={() => toggleService(s.id)}
+                          />
+                          {s.name}
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
                   {scheduleError && (
-                    <p className="mt-3 text-sm text-oxblood-light">{scheduleError}</p>
+                    <p className="text-sm text-oxblood-light">{scheduleError}</p>
                   )}
 
-                  <div className="mt-4 flex gap-3">
+                  <div className="flex gap-3 pt-2">
                     <button
                       onClick={() => handleSaveSchedule(b.id)}
                       disabled={savingSchedule}
