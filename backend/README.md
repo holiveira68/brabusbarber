@@ -17,6 +17,8 @@ npm install
 # 1. Configure o banco
 cp .env.example .env
 # edite o .env com sua string de conexão MySQL e um JWT_SECRET
+# No .env, colocar a linha API_URL="http://${HOSTNAME}:3333/api"
+# No arquivo app.modules.ts, foi acrescentado o parâmetro expandVariables: true para tratar a variável API_URL
 
 # 2. Crie as tabelas
 npx prisma migrate dev --name init

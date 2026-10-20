@@ -13,7 +13,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // .env disponível em todo o app
+    ConfigModule.forRoot({ isGlobal: true, expandVariables: true }), // .env disponível em todo o app
     ScheduleModule.forRoot(), // Habilita tarefas agendadas (@Cron)
     PrismaModule,
     AuthModule,

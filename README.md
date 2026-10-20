@@ -80,8 +80,5 @@ Cada pasta tem seu próprio `README.md` com instruções detalhadas de setup.
 ## Próximos passos sugeridos (para evoluir o projeto)
 
 - Notificações push reais (Expo Notifications) para lembretes automáticos
-- Upload de foto de perfil dos barbeiros (multer, como no projeto Mercadim)
 - Avaliação do atendimento pelo cliente (o modelo `Review` já existe no
   banco, falta a tela/rota de criação)
-- Tela de administração de usuários no site (o endpoint `POST /api/users`
-  já existe na API)
