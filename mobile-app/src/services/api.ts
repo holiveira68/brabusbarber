@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Em dispositivo físico/emulador, "localhost" não aponta para o seu
-// computador — troque pelo IP da sua máquina na rede local (ex: 192.168.x.x)
-// ou pelo endereço do túnel do Expo. Veja o README do mobile-app.
-// const API_URL = 'http://10.81.204.24:3333/api';
-const API_URL = process.env.API_URL;
+// No Expo (SDK 49+), apenas variáveis com prefixo EXPO_PUBLIC_ são injetadas
+// no bundle JS. Defina EXPO_PUBLIC_API_URL no arquivo .env do mobile-app.
+// Em dispositivo físico/emulador use o IP da sua máquina na rede local,
+// nunca "localhost" (que aponta para o próprio device, não para o PC).
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.15.28:3333/api';
+
 
 export class ApiError extends Error {
   status: number;

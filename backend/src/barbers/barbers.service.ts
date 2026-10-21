@@ -9,16 +9,31 @@ const barberInclude = {
   services: { include: { service: true } },
 };
 
+/** Calcula média de estrelas e total de avaliações para um barbeiro. */
+async function attachRating(prisma: PrismaService, barber: any) {
+  const agg = await prisma.review.aggregate({
+    where: { appointment: { barberId: barber.id } },
+    _avg: { rating: true },
+    _count: { rating: true },
+  });
+  return {
+    ...barber,
+    averageRating: agg._avg.rating ? Number(agg._avg.rating.toFixed(1)) : 0,
+    reviewCount: agg._count.rating,
+  };
+}
+
 @Injectable()
 export class BarbersService {
   constructor(private prisma: PrismaService) {}
 
   // Lista pública — usada pelo app para o cliente escolher o barbeiro
-  findAll(onlyActive = true) {
-    return this.prisma.barberProfile.findMany({
+  async findAll(onlyActive = true) {
+    const barbers = await this.prisma.barberProfile.findMany({
       where: onlyActive ? { active: true } : undefined,
       include: barberInclude,
     });
+    return Promise.all(barbers.map((b) => attachRating(this.prisma, b)));
   }
 
   async findOne(id: number) {
@@ -27,7 +42,7 @@ export class BarbersService {
       include: barberInclude,
     });
     if (!barber) throw new NotFoundException('Barbeiro não encontrado');
-    return barber;
+    return attachRating(this.prisma, barber);
   }
 
   async findByUserId(userId: number) {

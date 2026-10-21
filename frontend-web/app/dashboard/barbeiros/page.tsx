@@ -34,7 +34,7 @@ interface BarberReviewSummary {
 const weekdayLabels = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sábado'];
 const weekdayShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-const emptyNewBarberForm = { name: '', email: '', password: '', phone: '', avatarUrl: '' };
+const emptyNewBarberForm = { name: '', email: '', password: '', phone: '', avatarUrl: '', bio: '', specialties: '' };
 
 interface WeekdayRow {
   weekday: number;
@@ -70,6 +70,8 @@ export default function BarbeirosPage() {
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editAvatarUrl, setEditAvatarUrl] = useState<string>('');
+  const [editBio, setEditBio] = useState<string>('');
+  const [editSpecialties, setEditSpecialties] = useState<string>('');
   const [weekRows, setWeekRows] = useState<WeekdayRow[]>([]);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
   const [savingSchedule, setSavingSchedule] = useState(false);
@@ -107,6 +109,7 @@ export default function BarbeirosPage() {
     setCreateError(null);
     setCreating(true);
     try {
+      // 1. Cria o usuário (o backend cria o BarberProfile em cascata)
       await api.post('/users', {
         name: newBarberForm.name,
         email: newBarberForm.email,
@@ -115,6 +118,19 @@ export default function BarbeirosPage() {
         avatarUrl: newBarberForm.avatarUrl || undefined,
         role: 'BARBEIRO',
       });
+
+      // 2. Busca o barbeiro recém-criado pelo email para obter o barberId
+      if (newBarberForm.bio || newBarberForm.specialties) {
+        const allBarbers = await api.get<Barber[]>('/barbers?includeInactive=true');
+        const created = allBarbers.find((b) => b.user.email === newBarberForm.email);
+        if (created) {
+          await api.patch(`/barbers/${created.id}`, {
+            bio: newBarberForm.bio || undefined,
+            specialties: newBarberForm.specialties || undefined,
+          });
+        }
+      }
+
       setNewBarberForm(emptyNewBarberForm);
       setShowNewForm(false);
       load();
@@ -128,6 +144,8 @@ export default function BarbeirosPage() {
   function startEditing(barber: Barber) {
     setEditingId(barber.id);
     setEditAvatarUrl(barber.user.avatarUrl || '');
+    setEditBio(barber.bio || '');
+    setEditSpecialties(barber.specialties || '');
     setWeekRows(buildWeekRows(barber.workingHours));
     setSelectedServiceIds(barber.services.map((s) => s.service.id));
     setScheduleError(null);
@@ -165,6 +183,8 @@ export default function BarbeirosPage() {
       await api.patch(`/barbers/${barberId}`, {
         serviceIds: selectedServiceIds,
         avatarUrl: editAvatarUrl.trim() || undefined,
+        bio: editBio.trim() || undefined,
+        specialties: editSpecialties.trim() || undefined,
       });
 
       setEditingId(null);
@@ -265,6 +285,28 @@ export default function BarbeirosPage() {
               onChange={(e) => setNewBarberForm({ ...newBarberForm, avatarUrl: e.target.value })}
               className="input-field"
               placeholder="Ex: /barbers/marcello.png ou https://..."
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs text-bone-muted">Especialidades</label>
+            <input
+              type="text"
+              value={newBarberForm.specialties}
+              onChange={(e) => setNewBarberForm({ ...newBarberForm, specialties: e.target.value })}
+              className="input-field"
+              placeholder="Ex: Corte, Degradê, Barba"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-xs text-bone-muted">Bio / Apresentação</label>
+            <textarea
+              rows={3}
+              value={newBarberForm.bio}
+              onChange={(e) => setNewBarberForm({ ...newBarberForm, bio: e.target.value })}
+              className="input-field resize-none"
+              placeholder="Ex: Especialista em cortes degradê, 8 anos de experiência."
             />
           </div>
 
@@ -397,7 +439,7 @@ export default function BarbeirosPage() {
                       onClick={() => startEditing(b)}
                       className="btn-outline mt-4 w-full text-xs"
                     >
-                      Editar foto, horários e serviços
+                      Editar perfil, horários e serviços
                     </button>
                   )}
                 </>
@@ -411,6 +453,28 @@ export default function BarbeirosPage() {
                       onChange={(e) => setEditAvatarUrl(e.target.value)}
                       className="input-field py-1.5 text-xs"
                       placeholder="Ex: /barbers/marcello.png ou https://..."
+                    />
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-bone-muted block mb-1">Especialidades</span>
+                    <input
+                      type="text"
+                      value={editSpecialties}
+                      onChange={(e) => setEditSpecialties(e.target.value)}
+                      className="input-field py-1.5 text-xs"
+                      placeholder="Ex: Corte, Degradê, Barba"
+                    />
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-bone-muted block mb-1">Bio / Apresentação</span>
+                    <textarea
+                      rows={3}
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      className="input-field resize-none py-1.5 text-xs"
+                      placeholder="Ex: Especialista em cortes degradê, 8 anos de experiência."
                     />
                   </div>
 

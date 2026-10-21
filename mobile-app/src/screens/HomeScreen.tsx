@@ -10,8 +10,38 @@ interface Barber {
   id: number;
   bio: string | null;
   specialties: string | null;
+  averageRating: number;
+  reviewCount: number;
   user: { name: string };
 }
+
+/** Renderiza as estrelas cheias, meias e vazias com base na média */
+function StarRating({ rating, count }: { rating: number; count: number }) {
+  const stars = Array.from({ length: 5 }, (_, i) => {
+    if (rating >= i + 1) return '★';
+    if (rating >= i + 0.5) return '⯨';
+    return '☆';
+  });
+
+  return (
+    <View style={starStyles.row}>
+      {stars.map((s, i) => (
+        <Text key={i} style={starStyles.star}>
+          {s}
+        </Text>
+      ))}
+      <Text style={starStyles.label}>
+        {count > 0 ? `${rating.toFixed(1)} (${count} ${count === 1 ? 'avaliação' : 'avaliações'})` : 'Sem avaliações'}
+      </Text>
+    </View>
+  );
+}
+
+const starStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  star: { color: colors.brass, fontSize: 16, marginRight: 1 },
+  label: { color: colors.boneMuted, fontSize: 12, marginLeft: 6 },
+});
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -44,6 +74,7 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.card}>
             <Text style={styles.barberName}>{item.user.name}</Text>
             {item.specialties && <Text style={styles.specialties}>{item.specialties}</Text>}
+            <StarRating rating={item.averageRating} count={item.reviewCount} />
             {item.bio && <Text style={styles.bio}>{item.bio}</Text>}
             <Button
               label="AGENDAR"
@@ -76,3 +107,4 @@ const styles = StyleSheet.create({
   bio: { color: colors.boneMuted, fontSize: 13, marginTop: 8 },
   empty: { color: colors.boneMuted, textAlign: 'center', marginTop: 40 },
 });
+
